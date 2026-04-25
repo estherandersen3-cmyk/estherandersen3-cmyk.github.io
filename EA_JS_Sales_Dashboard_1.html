@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sales Analytics Dashboard · JavaScript Project</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iIzJDMUEwRSIvPgogIDx0ZXh0IHg9IjE2IiB5PSIyMiIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsIHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0I1NjIyQSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgbGV0dGVyLXNwYWNpbmc9Ii0wLjUiPkVBPC90ZXh0Pgo8L3N2Zz4=">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Figtree:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F7F3EC;
+    --parchment: #EDE7D9;
+    --surface: #FDFAF5;
+    --espresso: #2C1A0E;
+    --coffee: #6B4226;
+    --copper: #B5622A;
+    --warm-mid: #9C7A5B;
+    --text: #1E1208;
+    --muted: #7A6555;
+    --border: #D9CFC0;
+    --online: #4a7fc1;
+    --offline: #B5622A;
+    --green: #4a8c6a;
+    --red: #c45a4a;
+    --orange: #c47a3a;
+    --purple: #7a5a8c;
+    --copper-dim: rgba(181,98,42,0.10);
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Figtree', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── GRAIN OVERLAY ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0.4;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    padding: 40px 48px 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--cream);
+    position: relative;
+  }
+
+  .header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding-bottom: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .project-tag {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--copper);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+  }
+
+  .project-tag::before {
+    content: '';
+    display: block;
+    width: 28px;
+    height: 1px;
+    background: var(--copper);
+  }
+
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(36px, 4vw, 60px);
+    font-weight: 300;
+    letter-spacing: -0.01em;
+    color: var(--espresso);
+    line-height: 1.05;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--copper);
+  }
+
+  .header-meta {
+    font-size: 12px;
+    font-weight: 300;
+    color: var(--muted);
+    line-height: 1.9;
+    text-align: right;
+  }
+
+  .header-meta strong {
+    font-weight: 500;
+    color: var(--warm-mid);
+  }
+
+  /* ─── FILTER BAR ─── */
+  .filter-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 48px;
+  }
+
+  .filter-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .filter-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .filter-group {
+    display: flex;
+    gap: 6px;
+  }
+
+  .filter-btn {
+    font-family: 'Figtree', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 5px 12px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+    letter-spacing: 0.03em;
+  }
+
+  .filter-btn:hover { border-color: var(--copper); color: var(--copper); }
+  .filter-btn.active {
+    border-color: var(--copper);
+    background: var(--copper-dim);
+    color: var(--espresso);
+    font-weight: 600;
+  }
+
+  .filter-divider { width: 1px; height: 20px; background: var(--border); }
+
+  /* ─── MAIN ─── */
+  main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 48px 64px;
+  }
+
+  /* ─── KPI CARDS ─── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    margin-bottom: 32px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .kpi-card {
+    background: var(--surface);
+    padding: 28px 32px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.2s;
+  }
+
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--copper);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .kpi-card:hover { background: var(--parchment); }
+  .kpi-card:hover::before { opacity: 1; }
+
+  .kpi-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--warm-mid);
+    margin-bottom: 14px;
+  }
+
+  .kpi-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(32px, 3vw, 48px);
+    font-weight: 300;
+    color: var(--espresso);
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+
+  .kpi-sub {
+    font-size: 12px;
+    font-weight: 300;
+    color: var(--muted);
+  }
+
+  .kpi-accent { color: var(--copper); font-weight: 500; }
+
+  /* ─── CHART GRID ─── */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 2px;
+    margin-bottom: 2px;
+    background: var(--border);
+    border-radius: 4px 4px 0 0;
+    overflow: hidden;
+  }
+
+  .chart-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: var(--border);
+    border-radius: 0 0 4px 4px;
+    overflow: hidden;
+  }
+
+  .chart-card {
+    background: var(--surface);
+    padding: 28px;
+  }
+
+  .chart-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--warm-mid);
+    margin-bottom: 6px;
+  }
+
+  .chart-subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--espresso);
+    margin-bottom: 24px;
+    line-height: 1.2;
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+  }
+
+  /* ─── TABLE ─── */
+  .table-card {
+    background: var(--surface);
+    padding: 28px;
+    margin-top: 2px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+
+  .table-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .table-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .search-box {
+    font-family: 'Figtree', sans-serif;
+    font-size: 12px;
+    padding: 6px 12px;
+    background: var(--cream);
+    border: 1px solid var(--border);
+    color: var(--text);
+    outline: none;
+    width: 180px;
+    border-radius: 2px;
+    transition: border-color 0.2s;
+    font-weight: 400;
+  }
+
+  .search-box:focus { border-color: var(--copper); }
+  .search-box::placeholder { color: var(--border); }
+
+  .sort-btn {
+    font-family: 'Figtree', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    cursor: pointer;
+    border-radius: 2px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    transition: all 0.15s;
+  }
+
+  .sort-btn:hover { border-color: var(--copper); color: var(--copper); }
+  .sort-btn.active { background: var(--copper-dim); border-color: var(--copper); color: var(--espresso); font-weight: 600; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  thead th {
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--warm-mid);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  thead th:hover { color: var(--copper); }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(217,207,192,0.5);
+    transition: background 0.1s;
+  }
+
+  tbody tr:hover { background: var(--parchment); }
+
+  tbody td {
+    padding: 10px 12px;
+    color: var(--text);
+    font-weight: 300;
+  }
+
+  td.country { color: var(--coffee); font-weight: 600; font-size: 11px; letter-spacing: 0.04em; }
+  td.channel-online { color: var(--online); font-weight: 500; }
+  td.channel-offline { color: var(--offline); font-weight: 500; }
+  td.profit { color: var(--green); font-weight: 500; }
+  td.priority-c { color: var(--red); font-weight: 600; }
+  td.priority-h { color: var(--orange); font-weight: 600; }
+  td.priority-m { color: var(--warm-mid); font-weight: 600; }
+  td.priority-l { color: var(--muted); font-weight: 500; }
+
+  .table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+    font-size: 12px;
+    font-weight: 300;
+    color: var(--muted);
+  }
+
+  .page-btns {
+    display: flex;
+    gap: 4px;
+  }
+
+  .page-btn {
+    font-family: 'Figtree', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 10px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+  }
+
+  .page-btn:hover { border-color: var(--copper); color: var(--copper); }
+  .page-btn.active { background: var(--copper-dim); border-color: var(--copper); color: var(--espresso); font-weight: 600; }
+
+  /* ─── LEGEND ─── */
+  .legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--muted);
+  }
+
+  .legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 48px;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    text-align: center;
+    background: var(--parchment);
+  }
+
+  footer a {
+    color: var(--copper);
+    text-decoration: none;
+  }
+
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 900px) {
+    header, .filter-bar, main, footer { padding-left: 20px; padding-right: 20px; }
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    .chart-grid, .chart-grid-3 { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 560px) {
+    .kpi-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <div>
+      <div class="project-tag">Project 07 · JavaScript</div>
+      <h1>Sales <em>Analytics</em><br>Dashboard</h1>
+    </div>
+    <div class="header-meta">
+      <strong>Dataset:</strong> European Sales Orders<br>
+      <strong>Period:</strong> 2010 – 2017 · 1,328 orders<br>
+      <strong>Built with:</strong> Vanilla JavaScript + Canvas API
+    </div>
+  </div>
+</header>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <div class="filter-inner">
+    <span class="filter-label">Year</span>
+    <div class="filter-group" id="yearFilters"></div>
+    <div class="filter-divider"></div>
+    <span class="filter-label">Channel</span>
+    <div class="filter-group">
+      <button class="filter-btn active" data-channel="all">All</button>
+      <button class="filter-btn" data-channel="Online">Online</button>
+      <button class="filter-btn" data-channel="Offline">Offline</button>
+    </div>
+    <div class="filter-divider"></div>
+    <span class="filter-label">Priority</span>
+    <div class="filter-group">
+      <button class="filter-btn active" data-priority="all">All</button>
+      <button class="filter-btn" data-priority="C">Critical</button>
+      <button class="filter-btn" data-priority="H">High</button>
+      <button class="filter-btn" data-priority="M">Medium</button>
+      <button class="filter-btn" data-priority="L">Low</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main>
+
+  <!-- KPI CARDS -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Total Revenue</div>
+      <div class="kpi-value" id="kpiRevenue">—</div>
+      <div class="kpi-sub">across all orders</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Total Profit</div>
+      <div class="kpi-value" id="kpiProfit">—</div>
+      <div class="kpi-sub kpi-accent" id="kpiMargin">—% margin</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Total Orders</div>
+      <div class="kpi-value" id="kpiOrders">—</div>
+      <div class="kpi-sub">order records</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Avg Order Value</div>
+      <div class="kpi-value" id="kpiAvg">—</div>
+      <div class="kpi-sub">revenue per order</div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 1: Line + Bar -->
+  <div class="chart-grid">
+    <div class="chart-card">
+      <div class="chart-title">Trend Analysis</div>
+      <div class="chart-subtitle">Revenue & Profit by Year</div>
+      <canvas id="lineChart" height="200"></canvas>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--copper)"></div>Revenue</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--online)"></div>Profit</div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Channel Split</div>
+      <div class="chart-subtitle">Online vs Offline</div>
+      <canvas id="channelChart" height="200"></canvas>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--online)"></div>Online</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--offline)"></div>Offline</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 2: Country + Priority -->
+  <div class="chart-grid-3" style="margin-top:2px">
+    <div class="chart-card" style="grid-column: span 2">
+      <div class="chart-title">Geographic Distribution</div>
+      <div class="chart-subtitle">Top 10 Countries by Revenue</div>
+      <canvas id="countryChart" height="220"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Order Priority</div>
+      <div class="chart-subtitle">Revenue by Priority</div>
+      <canvas id="priorityChart" height="220"></canvas>
+      <div class="legend" style="margin-top:12px; justify-content: center">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Critical</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div>High</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--warm-mid)"></div>Medium</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--muted)"></div>Low</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATA TABLE -->
+  <div class="table-card">
+    <div class="table-header">
+      <div>
+        <div class="chart-title">Raw Data Explorer</div>
+        <div class="chart-subtitle">Order-level records</div>
+      </div>
+      <div class="table-controls">
+        <input type="text" class="search-box" id="searchBox" placeholder="Search country, channel...">
+        <button class="sort-btn active" id="sortRevBtn">Sort: Revenue ↓</button>
+        <button class="sort-btn" id="sortProfBtn">Sort: Profit ↓</button>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Date</th>
+          <th>Country</th>
+          <th>Channel</th>
+          <th>Priority</th>
+          <th>Units</th>
+          <th>Revenue</th>
+          <th>Profit</th>
+          <th>Margin</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    <div class="table-footer">
+      <span id="tableCount">— records</span>
+      <div class="page-btns" id="pageBtns"></div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  JavaScript Project · Portfolio 2026 · Esther Alvarez-Andersen · Built with Vanilla JS, Canvas API, DOM Manipulation
+  &nbsp;·&nbsp; <a href="esther-portfolio_5.html">← Back to Portfolio</a>
+</footer>
+
+<script>
+// ────────────────────────────────────────────────
+// DATA
+// ────────────────────────────────────────────────
+const AGG = {"kpis":{"revenue":1702129408,"profit":501434459,"orders":1328,"margin":29.5},"years":[{"year":"2010","revenue":209382247,"profit":61422460,"orders":166},{"year":"2011","revenue":231937557,"profit":69044660,"orders":175},{"year":"2012","revenue":285485892,"profit":87884066,"orders":202},{"year":"2013","revenue":182962359,"profit":53387995,"orders":158},{"year":"2014","revenue":236285823,"profit":71189626,"orders":186},{"year":"2015","revenue":227954099,"profit":61734040,"orders":160},{"year":"2016","revenue":191520957,"profit":57771921,"orders":175},{"year":"2017","revenue":136600474,"profit":38999691,"orders":106}],"countries":[{"country":"CZE","revenue":53543932,"profit":13635594},{"country":"UKR","revenue":53252318,"profit":14804926},{"country":"BIH","revenue":50117508,"profit":13257603},{"country":"MKD","revenue":49222085,"profit":13684100},{"country":"SMR","revenue":47883708,"profit":13792993},{"country":"AND","revenue":47756693,"profit":15410037},{"country":"PRT","revenue":47172190,"profit":11345408},{"country":"MLT","revenue":47145321,"profit":14610128},{"country":"RUS","revenue":46051660,"profit":13267683},{"country":"SVK","revenue":42940998,"profit":12052790}],"channels":[{"channel":"Online","revenue":830368784,"profit":247967940,"orders":663},{"channel":"Offline","revenue":871760624,"profit":253466519,"orders":665}],"priorities":[{"priority":"C","revenue":412024228,"orders":306},{"priority":"H","revenue":436294865,"orders":335},{"priority":"L","revenue":388509487,"orders":334},{"priority":"M","revenue":465300829,"orders":353}]};
+
+// Raw order data (embedded — demonstrates DOM rendering from data structures)
+const ORDERS = [{"id":100640618,"date":"2014-10-08","priority":"M","country":"NOR","channel":"Online","units":650,"revenue":133705,"cost":76121.5,"profit":57583.5},{"id":100983083,"date":"2016-08-11","priority":"C","country":"SRB","channel":"Offline","units":1993,"revenue":409960,"cost":233400.23,"profit":176559.87},{"id":101025998,"date":"2014-07-18","priority":"M","country":"UNKN","channel":"Online","units":4693,"revenue":3136191,"cost":2358420.22,"profit":777770.89},{"id":102230632,"date":"2017-05-13","priority":"L","country":"MNE","channel":"Online","units":1171,"revenue":127967,"cost":41968.64,"profit":85998.24},{"id":103435266,"date":"2012-08-11","priority":"H","country":"SRB","channel":"Offline","units":7648,"revenue":362898,"cost":243129.92,"profit":119767.68},{"id":103450715,"date":"2015-03-15","priority":"H","country":"SVK","channel":"Online","units":2220,"revenue":1445686,"cost":1165411.2,"profit":280275},{"id":103499639,"date":"2013-04-20","priority":"L","country":"FRA","channel":"Online","units":6698,"revenue":62492,"cost":46350.16,"profit":16142.18},{"id":103762280,"date":"2011-11-12","priority":"M","country":"ESP","channel":"Online","units":4419,"revenue":680791,"cost":401819.67,"profit":278971.47},{"id":103832662,"date":"2012-09-19","priority":"H","country":"HRV","channel":"Offline","units":5247,"revenue":1339454,"cost":836476.74,"profit":502977.42},{"id":104008615,"date":"2011-01-23","priority":"M","country":"DEU","channel":"Online","units":7315,"revenue":1504695,"cost":856659.65,"profit":648035.85},{"id":104165685,"date":"2012-02-19","priority":"L","country":"ARM","channel":"Online","units":3796,"revenue":2536753,"cost":1907641.84,"profit":629111.08},{"id":104190576,"date":"2017-02-22","priority":"C","country":"GEO","channel":"Offline","units":1162,"revenue":490236,"cost":423769.78,"profit":66466.4},{"id":104245078,"date":"2013-03-27","priority":"M","country":"GBR","channel":"Offline","units":7290,"revenue":68016,"cost":50446.8,"profit":17568.9},{"id":104548490,"date":"2014-01-01","priority":"M","country":"UNKN","channel":"Online","units":7076,"revenue":1806361,"cost":1128055.92,"profit":678305.36},{"id":105030000,"date":"2016-06-02","priority":"C","country":"SVN","channel":"Offline","units":9566,"revenue":1045372,"cost":342845.44,"profit":702527.04},{"id":107651269,"date":"2013-10-28","priority":"M","country":"HRV","channel":"Online","units":5258,"revenue":3513764,"cost":2642355.32,"profit":871408.34},{"id":108407437,"date":"2015-02-19","priority":"C","country":"ROU","channel":"Offline","units":9025,"revenue":2303902,"cost":1438765.5,"profit":865136.5},{"id":109914195,"date":"2012-03-12","priority":"M","country":"POL","channel":"Offline","units":4908,"revenue":536346,"cost":175902.72,"profit":360443.52},{"id":111063039,"date":"2012-05-26","priority":"L","country":"LUX","channel":"Online","units":4876,"revenue":1244745,"cost":777331.92,"profit":467413.36},{"id":111246287,"date":"2017-06-09","priority":"M","country":"CYP","channel":"Offline","units":9103,"revenue":3840465,"cost":3319773.07,"profit":520691.6},{"id":111496055,"date":"2011-04-28","priority":"M","country":"BEL","channel":"Online","units":3015,"revenue":28130,"cost":20863.8,"profit":7266.15},{"id":111893022,"date":"2016-10-28","priority":"L","country":"SVN","channel":"Online","units":486,"revenue":124066,"cost":77478.12,"profit":46587.96},{"id":112330758,"date":"2016-12-15","priority":"C","country":"LTU","channel":"Offline","units":22,"revenue":14327,"cost":11549.12,"profit":2777.5},{"id":113524663,"date":"2010-10-29","priority":"L","country":"RUS","channel":"Online","units":3325,"revenue":1453690,"cost":875572.25,"profit":578117.75},{"id":114954173,"date":"2010-02-03","priority":"C","country":"MLT","channel":"Offline","units":6349,"revenue":59236,"cost":43935.08,"profit":15301.09},{"id":115363156,"date":"2015-12-04","priority":"H","country":"UKR","channel":"Offline","units":7376,"revenue":4803325,"cost":3872104.96,"profit":931220},{"id":117929494,"date":"2015-01-24","priority":"H","country":"UNKN","channel":"Offline","units":6813,"revenue":63565,"cost":47145.96,"profit":16419.33},{"id":118086564,"date":"2016-02-19","priority":"M","country":"NOR","channel":"Online","units":3293,"revenue":502446,"cost":320869.92,"profit":181576.02},{"id":118659913,"date":"2014-08-02","priority":"C","country":"CZE","channel":"Online","units":2960,"revenue":608872,"cost":346645.6,"profit":262226.4},{"id":118859469,"date":"2011-06-02","priority":"L","country":"UNKN","channel":"Offline","units":2013,"revenue":307144,"cost":196146.72,"profit":110996.82},{"id":119935786,"date":"2015-01-14","priority":"L","country":"ROU","channel":"Offline","units":519,"revenue":42418,"cost":29411.73,"profit":13006.14},{"id":120419871,"date":"2015-05-13","priority":"H","country":"LTU","channel":"Online","units":3771,"revenue":308204,"cost":213702.57,"profit":94501.26},{"id":120977771,"date":"2011-03-23","priority":"M","country":"ARM","channel":"Online","units":8866,"revenue":82720,"cost":61352.72,"profit":21367.06},{"id":121380746,"date":"2016-11-21","priority":"C","country":"MLT","channel":"Online","units":8115,"revenue":75713,"cost":56155.8,"profit":19557.15},{"id":121945512,"date":"2017-04-08","priority":"C","country":"GBR","channel":"Online","units":5242,"revenue":248733,"cost":166643.18,"profit":82089.72},{"id":122144210,"date":"2017-04-27","priority":"C","country":"MNE","channel":"Offline","units":4041,"revenue":191745,"cost":128463.39,"profit":63282.06},{"id":122372519,"date":"2016-01-10","priority":"L","country":"PRT","channel":"Offline","units":1603,"revenue":76062,"cost":50959.37,"profit":25102.98},{"id":122967326,"date":"2017-03-24","priority":"H","country":"BLR","channel":"Online","units":7619,"revenue":361522,"cost":242208.01,"profit":119313.54},{"id":123086202,"date":"2014-01-02","priority":"M","country":"EST","channel":"Offline","units":2797,"revenue":714018,"cost":445897.74,"profit":268120.42},{"id":123544108,"date":"2010-05-13","priority":"M","country":"AUT","channel":"Online","units":8302,"revenue":1707721,"cost":972247.22,"profit":735474.18},{"id":123938930,"date":"2012-07-24","priority":"M","country":"BLR","channel":"Online","units":5138,"revenue":243798,"cost":163337.02,"profit":80461.08},{"id":125339686,"date":"2017-07-11","priority":"L","country":"MKD","channel":"Online","units":9653,"revenue":1472855,"cost":940588.32,"profit":532266.42},{"id":125349128,"date":"2012-05-18","priority":"L","country":"SMR","channel":"Offline","units":2447,"revenue":503348,"cost":286568.17,"profit":216779.73},{"id":126948583,"date":"2017-05-24","priority":"C","country":"UNKN","channel":"Online","units":5762,"revenue":1470923,"cost":918578.04,"profit":552345.32},{"id":127694451,"date":"2011-12-07","priority":"L","country":"EST","channel":"Offline","units":6481,"revenue":998323,"cost":589388.33,"profit":408934.67},{"id":128069480,"date":"2011-07-25","priority":"H","country":"UKR","channel":"Offline","units":5885,"revenue":892042,"cost":564474.6,"profit":327567.4},{"id":128286063,"date":"2013-01-31","priority":"M","country":"AND","channel":"Online","units":4042,"revenue":186649,"cost":152869.42,"profit":33779.58},{"id":128359638,"date":"2010-10-26","priority":"C","country":"MDA","channel":"Offline","units":6505,"revenue":308398,"cost":207704.7,"profit":100693.3},{"id":128432129,"date":"2012-06-01","priority":"M","country":"BIH","channel":"Online","units":6019,"revenue":2532490,"cost":1741590.14,"profit":790899.86},{"id":128826592,"date":"2016-12-16","priority":"L","country":"AND","channel":"Offline","units":4399,"revenue":409765,"cost":280516.04,"profit":129248.96},{"id":128930827,"date":"2016-07-01","priority":"H","country":"FRA","channel":"Online","units":3703,"revenue":1557681,"cost":1168742.78,"profit":388938.22},{"id":130119867,"date":"2014-12-01","priority":"M","country":"AUT","channel":"Offline","units":9773,"revenue":916285,"cost":633449.07,"profit":282835.93},{"id":131248524,"date":"2011-04-06","priority":"L","country":"PRT","channel":"Online","units":3861,"revenue":368248,"cost":232049.04,"profit":136198.96},{"id":134278313,"date":"2016-04-24","priority":"M","country":"MDA","channel":"Online","units":6459,"revenue":591534,"cost":394768.56,"profit":196765.44},{"id":134572749,"date":"2016-06-07","priority":"H","country":"POL","channel":"Online","units":5023,"revenue":1571742,"cost":1178878.3,"profit":392863.7},{"id":135107812,"date":"2014-10-19","priority":"H","country":"AZE","channel":"Online","units":1990,"revenue":192059,"cost":136399.1,"profit":55659.9},{"id":136023958,"date":"2016-01-25","priority":"H","country":"DNK","channel":"Offline","units":7017,"revenue":329685,"cost":223144.77,"profit":106540.23},{"id":136217989,"date":"2013-06-14","priority":"C","country":"LTU","channel":"Online","units":9870,"revenue":453765,"cost":305265.3,"profit":148499.7},{"id":136397785,"date":"2013-03-16","priority":"H","country":"MKD","channel":"Online","units":8866,"revenue":465012,"cost":298395.44,"profit":166616.56},{"id":136543718,"date":"2015-08-30","priority":"M","country":"AZE","channel":"Offline","units":7083,"revenue":3374048,"cost":2492578.14,"profit":881469.86},{"id":136720219,"date":"2011-06-16","priority":"L","country":"AND","channel":"Online","units":8614,"revenue":792673,"cost":500882.18,"profit":291790.82},{"id":136722626,"date":"2016-03-12","priority":"H","country":"CZE","channel":"Offline","units":8699,"revenue":402295,"cost":271483.01,"profit":130811.99},{"id":137073855,"date":"2012-11-05","priority":"C","country":"SVK","channel":"Online","units":7044,"revenue":744895,"cost":468745.56,"profit":276149.44},{"id":137210456,"date":"2011-12-31","priority":"M","country":"MDA","channel":"Online","units":7697,"revenue":365174,"cost":244316.68,"profit":120857.32},{"id":138219264,"date":"2014-03-10","priority":"C","country":"MKD","channel":"Online","units":5459,"revenue":2619483,"cost":1917219.78,"profit":702263.22},{"id":138519453,"date":"2015-01-28","priority":"L","country":"GEO","channel":"Offline","units":4906,"revenue":473451,"cost":302143.6,"profit":171307.4},{"id":138617621,"date":"2014-08-04","priority":"H","country":"SMR","channel":"Online","units":5283,"revenue":2221249,"cost":1622128.9,"profit":599120.1},{"id":138670440,"date":"2016-11-10","priority":"C","country":"LVA","channel":"Online","units":6095,"revenue":289261,"cost":192965.5,"profit":96295.5},{"id":139272688,"date":"2014-02-25","priority":"M","country":"BGR","channel":"Offline","units":2474,"revenue":1178948,"cost":842561.52,"profit":336386.48},{"id":140026823,"date":"2017-05-28","priority":"H","country":"SMR","channel":"Online","units":2920,"revenue":136991,"cost":92896.8,"profit":44094.2},{"id":140133673,"date":"2016-01-14","priority":"H","country":"CZE","channel":"Online","units":9278,"revenue":4249028,"cost":3020097.68,"profit":1228930.32},{"id":140253396,"date":"2012-03-14","priority":"C","country":"IRL","channel":"Offline","units":4028,"revenue":190985,"cost":128285.72,"profit":62699.28},{"id":140254897,"date":"2015-06-18","priority":"H","country":"PRT","channel":"Offline","units":3813,"revenue":198618,"cost":134023.47,"profit":64594.53},{"id":140436985,"date":"2011-10-17","priority":"C","country":"GEO","channel":"Offline","units":5521,"revenue":2617555,"cost":1914551.79,"profit":703003.21},{"id":140568484,"date":"2014-06-25","priority":"M","country":"MNE","channel":"Online","units":6780,"revenue":295736,"cost":198396.6,"profit":97339.4},{"id":141033059,"date":"2012-09-04","priority":"L","country":"GEO","channel":"Online","units":8046,"revenue":835185,"cost":550539.24,"profit":284645.76},{"id":141277882,"date":"2016-09-12","priority":"H","country":"POL","channel":"Offline","units":7430,"revenue":708855,"cost":473497.7,"profit":235357.3},{"id":141430940,"date":"2016-10-06","priority":"H","country":"MLT","channel":"Online","units":7091,"revenue":3365779,"cost":2491196.69,"profit":874582.31},{"id":141668527,"date":"2010-03-20","priority":"H","country":"MLT","channel":"Online","units":2781,"revenue":263131,"cost":175901.19,"profit":87229.81},{"id":141750519,"date":"2011-02-18","priority":"L","country":"RUS","channel":"Offline","units":8073,"revenue":3826990,"cost":2793741.1,"profit":1033248.9},{"id":141821050,"date":"2016-08-14","priority":"M","country":"MNE","channel":"Online","units":7516,"revenue":327921,"cost":219960.04,"profit":107960.96},{"id":142052782,"date":"2010-08-09","priority":"H","country":"NOR","channel":"Offline","units":5278,"revenue":3532068,"cost":2583278.56,"profit":948789.44},{"id":142103631,"date":"2015-05-29","priority":"H","country":"MLT","channel":"Offline","units":476,"revenue":226106,"cost":148893.44,"profit":77212.56},{"id":142153049,"date":"2012-05-21","priority":"C","country":"BIH","channel":"Online","units":6820,"revenue":2865568,"cost":2098399.8,"profit":767168.2},{"id":142226847,"date":"2011-08-04","priority":"H","country":"SVN","channel":"Offline","units":3491,"revenue":1654680,"cost":1213432.64,"profit":441247.36},{"id":142343695,"date":"2015-07-12","priority":"H","country":"AND","channel":"Offline","units":4551,"revenue":716124,"cost":449817.39,"profit":266306.61},{"id":142395695,"date":"2013-06-18","priority":"C","country":"BIH","channel":"Offline","units":3696,"revenue":1708104,"cost":1147041.12,"profit":561062.88},{"id":142619513,"date":"2016-09-20","priority":"M","country":"IRL","channel":"Offline","units":3847,"revenue":1825105,"cost":1342397.53,"profit":482707.47},{"id":143052827,"date":"2015-10-14","priority":"H","country":"HUN","channel":"Online","units":3820,"revenue":1813580,"cost":1333060.4,"profit":480519.6},{"id":143120528,"date":"2014-03-17","priority":"C","country":"LVA","channel":"Online","units":8427,"revenue":399723,"cost":267564.21,"profit":132158.79},{"id":143125437,"date":"2010-06-25","priority":"L","country":"AND","channel":"Online","units":3785,"revenue":179535,"cost":120281.75,"profit":59253.25},{"id":143432977,"date":"2016-06-09","priority":"L","country":"AZE","channel":"Online","units":8427,"revenue":3993213,"cost":2925483.63,"profit":1067729.37}];
+
+// ────────────────────────────────────────────────
+// STATE
+// ────────────────────────────────────────────────
+let state = {
+  yearFilter: 'all',
+  channelFilter: 'all',
+  priorityFilter: 'all',
+  sortBy: 'revenue',
+  sortDir: 'desc',
+  search: '',
+  page: 0,
+  pageSize: 12
+};
+
+// ────────────────────────────────────────────────
+// UTILS
+// ────────────────────────────────────────────────
+function fmt(n, decimals = 0) {
+  if (n >= 1e9) return '$' + (n/1e9).toFixed(1) + 'B';
+  if (n >= 1e6) return '$' + (n/1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return '$' + (n/1e3).toFixed(0) + 'K';
+  return '$' + n.toFixed(decimals);
+}
+
+function fmtNum(n) {
+  return n.toLocaleString();
+}
+
+// Portfolio-matched color palette for canvas
+const COLORS = {
+  copper: '#B5622A',
+  gold: '#9C7A5B',
+  online: '#4a7fc1',
+  offline: '#B5622A',
+  green: '#4a8c6a',
+  dim: '#D9CFC0',
+  muted: '#7A6555',
+  text: '#1E1208',
+  espresso: '#2C1A0E',
+  red: '#c45a4a',
+  orange: '#c47a3a',
+  purple: '#7a5a8c',
+  surface: '#FDFAF5'
+};
+
+// ────────────────────────────────────────────────
+// FILTER SETUP
+// ────────────────────────────────────────────────
+function setupFilters() {
+  const yc = document.getElementById('yearFilters');
+  const allBtn = document.createElement('button');
+  allBtn.className = 'filter-btn active';
+  allBtn.dataset.year = 'all';
+  allBtn.textContent = 'All';
+  yc.appendChild(allBtn);
+
+  AGG.years.forEach(y => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn';
+    btn.dataset.year = y.year;
+    btn.textContent = y.year;
+    yc.appendChild(btn);
+  });
+
+  document.getElementById('yearFilters').addEventListener('click', e => {
+    if (!e.target.dataset.year) return;
+    document.querySelectorAll('[data-year]').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    state.yearFilter = e.target.dataset.year;
+    state.page = 0;
+    render();
+  });
+
+  document.querySelectorAll('[data-channel]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-channel]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.channelFilter = btn.dataset.channel;
+      state.page = 0;
+      render();
+    });
+  });
+
+  document.querySelectorAll('[data-priority]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-priority]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.priorityFilter = btn.dataset.priority;
+      state.page = 0;
+      render();
+    });
+  });
+
+  document.getElementById('searchBox').addEventListener('input', e => {
+    state.search = e.target.value.toLowerCase();
+    state.page = 0;
+    renderTable();
+  });
+
+  document.getElementById('sortRevBtn').addEventListener('click', () => {
+    state.sortBy = 'revenue'; state.sortDir = 'desc';
+    document.getElementById('sortRevBtn').classList.add('active');
+    document.getElementById('sortProfBtn').classList.remove('active');
+    renderTable();
+  });
+
+  document.getElementById('sortProfBtn').addEventListener('click', () => {
+    state.sortBy = 'profit'; state.sortDir = 'desc';
+    document.getElementById('sortProfBtn').classList.add('active');
+    document.getElementById('sortRevBtn').classList.remove('active');
+    renderTable();
+  });
+}
+
+// ────────────────────────────────────────────────
+// FILTERED DATA
+// ────────────────────────────────────────────────
+function getFiltered() {
+  return ORDERS.filter(r => {
+    if (state.yearFilter !== 'all' && !r.date.startsWith(state.yearFilter)) return false;
+    if (state.channelFilter !== 'all' && r.channel !== state.channelFilter) return false;
+    if (state.priorityFilter !== 'all' && r.priority !== state.priorityFilter) return false;
+    if (state.search) {
+      const s = state.search;
+      if (!r.country.toLowerCase().includes(s) && !r.channel.toLowerCase().includes(s)) return false;
+    }
+    return true;
+  });
+}
+
+// ────────────────────────────────────────────────
+// KPI CARDS
+// ────────────────────────────────────────────────
+function renderKPIs() {
+  const filtered = getFiltered();
+  const rev = filtered.reduce((s, r) => s + r.revenue, 0);
+  const prof = filtered.reduce((s, r) => s + r.profit, 0);
+  const orders = filtered.length;
+  const margin = rev > 0 ? (prof/rev*100) : 0;
+  const avg = orders > 0 ? rev/orders : 0;
+
+  document.getElementById('kpiRevenue').textContent = fmt(rev);
+  document.getElementById('kpiProfit').textContent = fmt(prof);
+  document.getElementById('kpiOrders').textContent = fmtNum(orders);
+  document.getElementById('kpiAvg').textContent = fmt(avg);
+  document.getElementById('kpiMargin').textContent = margin.toFixed(1) + '% margin';
+}
+
+// ────────────────────────────────────────────────
+// CANVAS HELPERS
+// ────────────────────────────────────────────────
+function setupCanvas(id) {
+  const canvas = document.getElementById(id);
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const w = rect.width - 56;
+  const h = parseInt(canvas.getAttribute('height'));
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  return { ctx, w, h };
+}
+
+// ────────────────────────────────────────────────
+// LINE CHART
+// ────────────────────────────────────────────────
+function drawLineChart() {
+  const { ctx, w, h } = setupCanvas('lineChart');
+  const pad = { top: 20, right: 20, bottom: 36, left: 60 };
+  const cw = w - pad.left - pad.right;
+  const ch = h - pad.top - pad.bottom;
+
+  const data = AGG.years;
+  const maxVal = Math.max(...data.map(d => d.revenue));
+  const step = cw / (data.length - 1);
+
+  ctx.clearRect(0, 0, w, h);
+
+  // Grid lines
+  ctx.strokeStyle = COLORS.dim;
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + ch - (ch * i / 4);
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(pad.left + cw, y);
+    ctx.stroke();
+    ctx.fillStyle = COLORS.muted;
+    ctx.font = '11px Figtree, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(fmt(maxVal * i / 4), pad.left - 8, y + 4);
+  }
+
+  function drawLine(key, color) {
+    const pts = data.map((d, i) => ({
+      x: pad.left + i * step,
+      y: pad.top + ch - (d[key] / maxVal) * ch
+    }));
+
+    // Area fill
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pad.top + ch);
+    pts.forEach(p => ctx.lineTo(p.x, p.y));
+    ctx.lineTo(pts[pts.length-1].x, pad.top + ch);
+    ctx.closePath();
+    ctx.fillStyle = color + '18';
+    ctx.fill();
+
+    // Line
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+    ctx.stroke();
+
+    // Dots
+    pts.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+    });
+
+    return pts;
+  }
+
+  drawLine('profit', COLORS.online);
+  drawLine('revenue', COLORS.copper);
+
+  // X axis labels
+  ctx.fillStyle = COLORS.muted;
+  ctx.font = '11px Figtree, sans-serif';
+  ctx.textAlign = 'center';
+  data.forEach((d, i) => {
+    ctx.fillText(d.year, pad.left + i * step, h - 8);
+  });
+}
+
+// ────────────────────────────────────────────────
+// CHANNEL CHART (grouped bar)
+// ────────────────────────────────────────────────
+function drawChannelChart() {
+  const { ctx, w, h } = setupCanvas('channelChart');
+  const pad = { top: 20, right: 20, bottom: 36, left: 70 };
+  const cw = w - pad.left - pad.right;
+  const ch = h - pad.top - pad.bottom;
+
+  const metrics = [
+    { label: 'Revenue', online: AGG.channels[0].revenue, offline: AGG.channels[1].revenue },
+    { label: 'Profit', online: AGG.channels[0].profit, offline: AGG.channels[1].profit },
+    { label: 'Orders', online: AGG.channels[0].orders, offline: AGG.channels[1].orders }
+  ];
+
+  const normFactors = metrics.map(m => Math.max(m.online, m.offline));
+  const groupW = cw / 3;
+  const barW = groupW * 0.3;
+
+  ctx.clearRect(0, 0, w, h);
+
+  // Grid
+  ctx.strokeStyle = COLORS.dim;
+  ctx.lineWidth = 0.5;
+  for (let i = 1; i <= 4; i++) {
+    const y = pad.top + ch - (ch * i / 4);
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + cw, y); ctx.stroke();
+  }
+
+  metrics.forEach((m, gi) => {
+    const gx = pad.left + gi * groupW + groupW / 2;
+    const maxH = normFactors[gi];
+
+    const oh = (m.online / maxH) * ch;
+    ctx.fillStyle = COLORS.online;
+    roundRect(ctx, gx - barW - 3, pad.top + ch - oh, barW, oh, 2);
+    ctx.fill();
+
+    const ofh = (m.offline / maxH) * ch;
+    ctx.fillStyle = COLORS.offline;
+    roundRect(ctx, gx + 3, pad.top + ch - ofh, barW, ofh, 2);
+    ctx.fill();
+
+    ctx.fillStyle = COLORS.muted;
+    ctx.font = '11px Figtree, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(m.label, gx, h - 8);
+  });
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h);
+  ctx.lineTo(x, y + h);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+// ────────────────────────────────────────────────
+// COUNTRY CHART (horizontal bar)
+// ────────────────────────────────────────────────
+function drawCountryChart() {
+  const { ctx, w, h } = setupCanvas('countryChart');
+  const pad = { top: 10, right: 80, bottom: 10, left: 46 };
+  const cw = w - pad.left - pad.right;
+  const ch = h - pad.top - pad.bottom;
+  const data = AGG.countries;
+  const barH = (ch / data.length) * 0.6;
+  const gap = ch / data.length;
+  const maxRev = data[0].revenue;
+
+  ctx.clearRect(0, 0, w, h);
+
+  data.forEach((d, i) => {
+    const y = pad.top + i * gap + (gap - barH) / 2;
+    const bw = (d.revenue / maxRev) * cw;
+
+    // Background track
+    ctx.fillStyle = COLORS.dim + '80';
+    roundRect(ctx, pad.left, y, cw, barH, 2);
+    ctx.fill();
+
+    // Bar with gradient
+    const grad = ctx.createLinearGradient(pad.left, 0, pad.left + bw, 0);
+    grad.addColorStop(0, COLORS.copper + 'cc');
+    grad.addColorStop(1, COLORS.gold + '88');
+    ctx.fillStyle = grad;
+    roundRect(ctx, pad.left, y, bw, barH, 2);
+    ctx.fill();
+
+    // Country code
+    ctx.fillStyle = COLORS.espresso;
+    ctx.font = '500 11px Figtree, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(d.country, pad.left - 6, y + barH / 2 + 4);
+
+    // Value
+    ctx.fillStyle = COLORS.muted;
+    ctx.font = '11px Figtree, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(fmt(d.revenue), pad.left + cw + 8, y + barH / 2 + 4);
+  });
+}
+
+// ────────────────────────────────────────────────
+// PRIORITY CHART (donut)
+// ────────────────────────────────────────────────
+function drawPriorityChart() {
+  const { ctx, w, h } = setupCanvas('priorityChart');
+  const data = AGG.priorities;
+  const total = data.reduce((s, d) => s + d.revenue, 0);
+  const colors = [COLORS.red, COLORS.orange, COLORS.gold, COLORS.muted];
+
+  const cx = w / 2;
+  const cy = h / 2 - 10;
+  const outer = Math.min(w, h) / 2 - 20;
+  const inner = outer * 0.55;
+
+  ctx.clearRect(0, 0, w, h);
+
+  let startAngle = -Math.PI / 2;
+  data.forEach((d, i) => {
+    const angle = (d.revenue / total) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, outer, startAngle, startAngle + angle);
+    ctx.closePath();
+    ctx.fillStyle = colors[i];
+    ctx.fill();
+
+    // Inner hole — match surface color
+    ctx.beginPath();
+    ctx.arc(cx, cy, inner, 0, Math.PI * 2);
+    ctx.fillStyle = '#FDFAF5';
+    ctx.fill();
+
+    startAngle += angle;
+  });
+
+  // Center text
+  ctx.fillStyle = COLORS.espresso;
+  ctx.font = '300 20px Cormorant Garamond, serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(fmt(total), cx, cy + 6);
+  ctx.fillStyle = COLORS.muted;
+  ctx.font = '11px Figtree, sans-serif';
+  ctx.fillText('total revenue', cx, cy + 20);
+}
+
+// ────────────────────────────────────────────────
+// TABLE
+// ────────────────────────────────────────────────
+function renderTable() {
+  const filtered = getFiltered()
+    .sort((a, b) => state.sortDir === 'desc'
+      ? b[state.sortBy] - a[state.sortBy]
+      : a[state.sortBy] - b[state.sortBy]);
+
+  const total = filtered.length;
+  const pages = Math.ceil(total / state.pageSize);
+  const slice = filtered.slice(state.page * state.pageSize, (state.page + 1) * state.pageSize);
+
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = slice.map(r => {
+    const margin = r.revenue > 0 ? (r.profit/r.revenue*100).toFixed(1) : '0.0';
+    const pClass = `priority-${r.priority.toLowerCase()}`;
+    return `<tr>
+      <td style="color:var(--muted);font-size:11px">${r.id}</td>
+      <td style="color:var(--muted)">${r.date}</td>
+      <td class="country">${r.country}</td>
+      <td class="channel-${r.channel.toLowerCase()}">${r.channel}</td>
+      <td class="${pClass}">${r.priority}</td>
+      <td>${fmtNum(r.units)}</td>
+      <td>${fmt(r.revenue)}</td>
+      <td class="profit">${fmt(r.profit)}</td>
+      <td>${margin}%</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('tableCount').textContent = `${fmtNum(total)} records · page ${state.page + 1}/${Math.max(1,pages)}`;
+
+  const pb = document.getElementById('pageBtns');
+  pb.innerHTML = '';
+  const makeBtn = (label, page, active) => {
+    const btn = document.createElement('button');
+    btn.className = 'page-btn' + (active ? ' active' : '');
+    btn.textContent = label;
+    btn.addEventListener('click', () => { state.page = page; renderTable(); });
+    pb.appendChild(btn);
+  };
+  if (state.page > 0) makeBtn('← Prev', state.page - 1, false);
+  const start = Math.max(0, state.page - 2);
+  const end = Math.min(pages - 1, start + 4);
+  for (let p = start; p <= end; p++) makeBtn(p + 1, p, p === state.page);
+  if (state.page < pages - 1) makeBtn('Next →', state.page + 1, false);
+}
+
+// ────────────────────────────────────────────────
+// RENDER ALL
+// ────────────────────────────────────────────────
+function render() {
+  renderKPIs();
+  drawLineChart();
+  drawChannelChart();
+  drawCountryChart();
+  drawPriorityChart();
+  renderTable();
+}
+
+// ────────────────────────────────────────────────
+// INIT
+// ────────────────────────────────────────────────
+setupFilters();
+render();
+
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(render, 100);
+});
+</script>
+</body>
+</html>
